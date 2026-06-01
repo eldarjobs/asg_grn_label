@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AeroChef GRN Print Label - Native UI Auto-Calc (76x51mm)
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  Uses native AeroChef UI components with perfected 76x51 thermal layout.
 // @match        https://skycatering.aerochef.online/ASGProd/GeneralStores/Forms/FKMS_GNST_GRN_Details.aspx*
 // @updateURL    https://github.com/eldarjobs/asg_grn_label/raw/refs/heads/main/label.user.js
