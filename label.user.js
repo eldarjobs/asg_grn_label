@@ -6,6 +6,7 @@
 // @match        https://skycatering.aerochef.online/ASGProd/GeneralStores/Forms/FKMS_GNST_GRN_Details.aspx*
 // @updateURL    https://github.com/eldarjobs/asg_grn_label/raw/refs/heads/main/label.user.js
 // @downloadURL  https://github.com/eldarjobs/asg_grn_label/raw/refs/heads/main/label.user.js
+// @copyright    10.06.2026
 // @grant        none
 // ==/UserScript==
 
