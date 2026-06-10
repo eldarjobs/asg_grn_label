@@ -2,7 +2,7 @@
 // @name         GRN Print Label
 // @namespace    http://tampermonkey.net/
 // @version      2.0
-// @description  Uses native AeroChef UI components with perfected 76x51 thermal layout.
+// @author       Eldar Eyvazlı
 // @match        https://skycatering.aerochef.online/ASGProd/GeneralStores/Forms/FKMS_GNST_GRN_Details.aspx*
 // @updateURL    https://github.com/eldarjobs/asg_grn_label/raw/refs/heads/main/label.user.js
 // @downloadURL  https://github.com/eldarjobs/asg_grn_label/raw/refs/heads/main/label.user.js
