@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GRN Print Label
 // @namespace    http://tampermonkey.net/
-// @version      2.6
+// @version      2.7
 // @author       Eldar Eyvazlı
 // @match        https://skycatering.aerochef.online/ASGProd/GeneralStores/Forms/FKMS_GNST_GRN_Details.aspx*
 // @updateURL    https://github.com/eldarjobs/asg_grn_label/raw/refs/heads/main/label.user.js
@@ -309,7 +309,7 @@
                 body { font-family: Arial, sans-serif; background: white; color: #000; -webkit-print-color-adjust: exact; }
                 .label-box {
                     width: ${labelWidth}; height: ${labelHeight};
-                    padding: 4mm 4mm 1mm 4mm; /* Yuxarı padding bir az azaldıldı */
+                    padding: 5mm 4mm 1mm 4mm; /* Yuxarı padding bir az azaldıldı */
                     box-sizing: border-box; page-break-after: always;
                     position: relative; display: flex; flex-direction: column;
                     overflow: hidden;
