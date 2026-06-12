@@ -276,7 +276,7 @@
                     remaining -= currentQty;
                 }
                 const displayQty = (labelQty < totalQty)
-                    ? `${currentQty} ${unit} <span style="font-size:10px; font-weight:normal; color:#444;">/ ${totalQty} ${unit}</span>`
+                    ? `${currentQty} ${unit} <span style="font-size:9px; font-weight:normal; color:#444;">/ ${totalQty} ${unit}</span>`
                     : `${totalQty} ${unit}`;
 
                 labelsHtml += `
@@ -306,42 +306,45 @@
             <head><title>Print ${selectedSize} Labels</title>
             <style>
                 * { margin:0; padding:0; box-sizing:border-box; }
-                body { font-family: Arial, sans-serif; background: white; color: #000; }
+                body { font-family: Arial, sans-serif; background: white; color: #000; -webkit-print-color-adjust: exact; }
                 .label-box {
                     width: ${labelWidth}; height: ${labelHeight};
-                    padding: 2mm 4mm 1mm 4mm;
+                    padding: 3mm 4mm 1mm 4mm; /* Yuxarı padding bir az azaldıldı */
                     box-sizing: border-box; page-break-after: always;
                     position: relative; display: flex; flex-direction: column;
                     overflow: hidden;
                 }
                 h2 {
-                    margin: 0 0 3px 0; font-size: 14px; text-align: center;
-                    border-bottom: 2px solid #000; padding-bottom: 2px;
+                    margin: 0 0 2px 0; font-size: 13px; text-align: center;
+                    border-bottom: 1.5px solid #000; padding-bottom: 2px;
                     letter-spacing: 0.5px; font-weight: 900;
                 }
                 .info-row {
-                    font-size: 12px; margin-bottom: 2px;
+                    font-size: 11px; margin-bottom: 1px; /* Sətir arası məsafə sıxlaşdırıldı */
                     display: flex; align-items: flex-start; line-height: 1.1;
                 }
                 .label {
-                    font-weight: normal; width: 55px; flex-shrink: 0; color: #111;
+                    font-weight: normal; width: 50px; flex-shrink: 0; color: #111;
                 }
                 .val {
                     font-weight: bold; flex-grow: 1; word-wrap: break-word;
                 }
                 .item-val {
-                    font-size: 12px; font-weight: 900;
+                    font-size: 11px; font-weight: 900;
                     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+                    line-height: 1.1;
                 }
-                .qty-val { font-size: 12px; }
+                .qty-val { font-size: 11px; }
                 .timestamp {
-                    font-weight: bold; flex-grow: 1; word-wrap: break-word;
-                    position: absolute; bottom: 0.5mm; right: 4mm;
-                    font-size: 10px; color: #222;
+                    position: absolute; bottom: 1mm; right: 4mm;
+                    font-size: 9px; color: #333; font-weight: normal;
                 }
                 @media print {
-                    @page { size: ${labelWidth} ${labelHeight}; margin: 0; }
-                    body { width: ${labelWidth}; height: ${labelHeight}; margin: 0; padding: 0; }
+                    @page { 
+                        size: ${labelWidth} ${labelHeight}; 
+                        margin: 0 !important; /* Brauzer kənarlarını tam sıfırlayır */
+                    }
+                    html, body { width: ${labelWidth}; height: ${labelHeight}; margin: 0; padding: 0; }
                     .label-box { margin: 0; border: none; width: ${labelWidth}; height: ${labelHeight}; page-break-after: always; }
                 }
             </style>
