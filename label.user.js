@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GRN Print Label
 // @namespace    http://tampermonkey.net/
-// @version      2.5
+// @version      2.6
 // @author       Eldar Eyvazlı
 // @match        https://skycatering.aerochef.online/ASGProd/GeneralStores/Forms/FKMS_GNST_GRN_Details.aspx*
 // @updateURL    https://github.com/eldarjobs/asg_grn_label/raw/refs/heads/main/label.user.js
