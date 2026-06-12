@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GRN Print Label
 // @namespace    http://tampermonkey.net/
-// @version      2.2
+// @version      2.3
 // @author       Eldar Eyvazlı
 // @match        https://skycatering.aerochef.online/ASGProd/GeneralStores/Forms/FKMS_GNST_GRN_Details.aspx*
 // @updateURL    https://github.com/eldarjobs/asg_grn_label/raw/refs/heads/main/label.user.js
@@ -62,7 +62,6 @@
         const itemsData = [];
 
         rows.forEach((row, idx) => {
-            // Sırf əsl məhsul sətirlərini götürmək və dropdown-dan gələn lazımsız sətirləri filtrləmək üçün lblItem_Description yoxlanışı edirik
             const nameSpan = row.querySelector('[id$="lblItem_Description"]');
             if (!nameSpan) return; 
 
@@ -72,22 +71,23 @@
             const code = cells[11] ? cells[11].innerText.trim() : '';
             let name = nameSpan.innerText.trim();
 
-            // --- BRAND ADINI TAPIB ITEM-IN QABAĞINA ƏLAVƏ ETMƏK ---
+            // --- BRAND ADINI DƏQİQ INPUTDAN TUTMAQ (FİX) ---
             let brand = '';
             const brandSelect = row.querySelector('select');
             if (brandSelect) {
                 brand = brandSelect.options[brandSelect.selectedIndex]?.text.trim() || '';
             } else {
-                // Əgər Telerik RadComboBox istifadə olunursa, input dəyərini yoxlayırıq
-                const brandInput = row.querySelector('.rcbInput, [id*="Brand" i], [id*="brand" i]');
+                // ID-si sonu rcbgridItemBrand_Input olan daxili Telerik mətn inputunu hədəfləyirik ("50" ID-sini yox, "AZERSUD" mətnini götürür)
+                const brandInput = row.querySelector('input[id$="rcbgridItemBrand_Input"], .rcbInput');
                 if (brandInput) {
-                    brand = (brandInput.value || brandInput.innerText || '').trim();
+                    brand = brandInput.value.trim();
                 }
             }
             
-            // "Select" tipli placeholder-ləri təmizləyirik ki, ada qarışmasın
+            // "Select" placeholder-lərini süzgəcdən keçiririk
             if (brand && !brand.toLowerCase().includes('select') && !brand.startsWith('---')) {
-                name = `${brand} ${name}`;
+                // FORMAT: ITEM NAME + BRAND NAME (Etiketdə avtomatik CODE + NAME + BRAND olacaq)
+                name = `${name} ${brand}`;
             }
             // ----------------------------------------------------
 
@@ -171,7 +171,7 @@
                                         <th scope="col" style="width:12%;">Batch No.</th>
                                         <th scope="col" style="width:12%;">Expiry Date</th>
                                         <th scope="col" style="width:7%;">Copies</th>
-                                   </tr>
+                                    </tr>
                                     ${items.map((i, idx) => {
                                         const rowClass = idx % 2 === 0 ? 'acf-griddetail-normalrow' : 'acf-griddetail-alternaterow';
                                         return `
@@ -283,6 +283,8 @@
                     ? `${currentQty} ${unit} <span style="font-size:10px; font-weight:normal; color:#444;">/ ${totalQty} ${unit}</span>`
                     : `${totalQty} ${unit}`;
 
+                // FORMAT BURADA TƏTBİQ OLUNUR: ${code} - ${name} 
+                // (Məlumat toplananda name = "Məhsul Brend" formatına salındığı üçün bura tam istədiyin kimi "CODE - NAME BRAND" çıxır)
                 labelsHtml += `
                     <div class="label-box">
                         <h2>SKY CATERING</h2>
