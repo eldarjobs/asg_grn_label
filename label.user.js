@@ -71,22 +71,18 @@
             const code = cells[11] ? cells[11].innerText.trim() : '';
             let name = nameSpan.innerText.trim();
 
-            // --- BRAND ADINI DƏQİQ INPUTDAN TUTMAQ (FİX) ---
             let brand = '';
             const brandSelect = row.querySelector('select');
             if (brandSelect) {
                 brand = brandSelect.options[brandSelect.selectedIndex]?.text.trim() || '';
             } else {
-                // ID-si sonu rcbgridItemBrand_Input olan daxili Telerik mətn inputunu hədəfləyirik ("50" ID-sini yox, "AZERSUD" mətnini götürür)
                 const brandInput = row.querySelector('input[id$="rcbgridItemBrand_Input"], .rcbInput');
                 if (brandInput) {
                     brand = brandInput.value.trim();
                 }
             }
             
-            // "Select" placeholder-lərini süzgəcdən keçiririk
             if (brand && !brand.toLowerCase().includes('select') && !brand.startsWith('---')) {
-                // FORMAT: ITEM NAME + BRAND NAME (Etiketdə avtomatik CODE + NAME + BRAND olacaq)
                 name = `${name} ${brand}`;
             }
             // ----------------------------------------------------
@@ -283,8 +279,6 @@
                     ? `${currentQty} ${unit} <span style="font-size:10px; font-weight:normal; color:#444;">/ ${totalQty} ${unit}</span>`
                     : `${totalQty} ${unit}`;
 
-                // FORMAT BURADA TƏTBİQ OLUNUR: ${code} - ${name} 
-                // (Məlumat toplananda name = "Məhsul Brend" formatına salındığı üçün bura tam istədiyin kimi "CODE - NAME BRAND" çıxır)
                 labelsHtml += `
                     <div class="label-box">
                         <h2>SKY CATERING</h2>
