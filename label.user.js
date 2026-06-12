@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GRN Print Label
 // @namespace    http://tampermonkey.net/
-// @version      2.1
+// @version      2.2
 // @author       Eldar Eyvazlı
 // @match        https://skycatering.aerochef.online/ASGProd/GeneralStores/Forms/FKMS_GNST_GRN_Details.aspx*
 // @updateURL    https://github.com/eldarjobs/asg_grn_label/raw/refs/heads/main/label.user.js
@@ -62,12 +62,35 @@
         const itemsData = [];
 
         rows.forEach((row, idx) => {
+            // Sırf əsl məhsul sətirlərini götürmək və dropdown-dan gələn lazımsız sətirləri filtrləmək üçün lblItem_Description yoxlanışı edirik
+            const nameSpan = row.querySelector('[id$="lblItem_Description"]');
+            if (!nameSpan) return; 
+
             const cells = row.querySelectorAll('td');
             if (cells.length < 4) return;
 
             const code = cells[11] ? cells[11].innerText.trim() : '';
-            const nameSpan = row.querySelector('[id$="lblItem_Description"]');
-            const name = nameSpan ? nameSpan.innerText.trim() : (cells[3] ? cells[3].innerText.trim() : '');
+            let name = nameSpan.innerText.trim();
+
+            // --- BRAND ADINI TAPIB ITEM-IN QABAĞINA ƏLAVƏ ETMƏK ---
+            let brand = '';
+            const brandSelect = row.querySelector('select');
+            if (brandSelect) {
+                brand = brandSelect.options[brandSelect.selectedIndex]?.text.trim() || '';
+            } else {
+                // Əgər Telerik RadComboBox istifadə olunursa, input dəyərini yoxlayırıq
+                const brandInput = row.querySelector('.rcbInput, [id*="Brand" i], [id*="brand" i]');
+                if (brandInput) {
+                    brand = (brandInput.value || brandInput.innerText || '').trim();
+                }
+            }
+            
+            // "Select" tipli placeholder-ləri təmizləyirik ki, ada qarışmasın
+            if (brand && !brand.toLowerCase().includes('select') && !brand.startsWith('---')) {
+                name = `${brand} ${name}`;
+            }
+            // ----------------------------------------------------
+
             if (!name) return;
 
             const unitSpan = row.querySelector('[id$="lblUnit_Description"]');
@@ -219,7 +242,7 @@
 
         document.getElementById('tm-close-modal').onclick = closeModal;
         document.getElementById('tm-cancel-btn').onclick = closeModal;
-       document.getElementById('tm-print-overlay').onclick = (e) => {
+        document.getElementById('tm-print-overlay').onclick = (e) => {
             if (e.target.id === 'tm-print-overlay') closeModal();
         };
         document.getElementById('tm-print-selected-btn').onclick = () => executePrint(items, grnNo, grnDate);
@@ -335,12 +358,9 @@
         setTimeout(() => { win.print(); win.close(); }, 300);
     }
 
-    // --- STABİL İNJECTOR MEXANİZMİ (DƏYİŞİKLİK BURADADIR) ---
     function init() {
-        // Həm ilkin yüklənmədə düyməni yoxla
         addPrintButton();
 
-        // ASP.NET Web Forms-un asinxron sorğularından (EndRequest) sonra düyməni yenidən bərpa et
         if (typeof window.Sys !== 'undefined' && window.Sys.WebForms && window.Sys.WebForms.PageRequestManager) {
             const prm = window.Sys.WebForms.PageRequestManager.getInstance();
             prm.add_endRequest(function () {
@@ -348,7 +368,6 @@
             });
         }
 
-        // MutationObserver mexanizmini daha yüngül və hədəfli hala gətiririk
         const observer = new MutationObserver((mutations) => {
             for (let mutation of mutations) {
                 if (mutation.addedNodes.length) {
@@ -363,7 +382,6 @@
         observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    // Səhifə tam hazır olduqda işə sal
     if (document.readyState === 'loading') {
         window.addEventListener('DOMContentLoaded', init);
     } else {
