@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GRN Print Label
 // @namespace    http://tampermonkey.net/
-// @version      2.0
+// @version      2.1
 // @author       Eldar Eyvazlı
 // @match        https://skycatering.aerochef.online/ASGProd/GeneralStores/Forms/FKMS_GNST_GRN_Details.aspx*
 // @updateURL    https://github.com/eldarjobs/asg_grn_label/raw/refs/heads/main/label.user.js
@@ -9,7 +9,6 @@
 // @copyright    10.06.2026
 // @grant        none
 // ==/UserScript==
-
 
 (function() {
     'use strict';
@@ -32,7 +31,7 @@
         const printBtnSpan = document.createElement('span');
         printBtnSpan.id = 'custom-print-label-btn';
         printBtnSpan.className = 'RadButton RadButton_Office2010Blue rbLinkButton btn acf-btn';
-        printBtnSpan.style.cssText = 'cursor:pointer; margin-left:10px; background-color:#0056b3; color:#fff;';
+        printBtnSpan.style.cssText = 'cursor:pointer; margin-left:10px; background-color:#0056b3; color:#fff; display:inline-flex; align-items:center;';
         printBtnSpan.tabIndex = 0;
         printBtnSpan.innerHTML = '<i class="material-icons acf-material-btnicon">print</i>Print Label';
 
@@ -149,7 +148,7 @@
                                         <th scope="col" style="width:12%;">Batch No.</th>
                                         <th scope="col" style="width:12%;">Expiry Date</th>
                                         <th scope="col" style="width:7%;">Copies</th>
-                                    </tr>
+                                   </tr>
                                     ${items.map((i, idx) => {
                                         const rowClass = idx % 2 === 0 ? 'acf-griddetail-normalrow' : 'acf-griddetail-alternaterow';
                                         return `
@@ -220,7 +219,7 @@
 
         document.getElementById('tm-close-modal').onclick = closeModal;
         document.getElementById('tm-cancel-btn').onclick = closeModal;
-        document.getElementById('tm-print-overlay').onclick = (e) => {
+       document.getElementById('tm-print-overlay').onclick = (e) => {
             if (e.target.id === 'tm-print-overlay') closeModal();
         };
         document.getElementById('tm-print-selected-btn').onclick = () => executePrint(items, grnNo, grnDate);
@@ -231,8 +230,7 @@
         const now = new Date();
         const printTimestamp = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-        // Ölçü seçimini oxuyuruq
-        const selectedSize = document.getElementById('tm-label-size').value; // '80x40' və ya '90x40'
+        const selectedSize = document.getElementById('tm-label-size').value;
         const labelWidth = selectedSize.split('x')[0] + 'mm';
         const labelHeight = selectedSize.split('x')[1] + 'mm';
 
@@ -337,16 +335,38 @@
         setTimeout(() => { win.print(); win.close(); }, 300);
     }
 
-    window.addEventListener('load', () => {
-        setTimeout(addPrintButton, 1500);
-        const observer = new MutationObserver(() => {
-            if (document.getElementById('ctl00_CphMaster_rbtnClose') && !document.getElementById('custom-print-label-btn')) {
-                addPrintButton();
+    // --- STABİL İNJECTOR MEXANİZMİ (DƏYİŞİKLİK BURADADIR) ---
+    function init() {
+        // Həm ilkin yüklənmədə düyməni yoxla
+        addPrintButton();
+
+        // ASP.NET Web Forms-un asinxron sorğularından (EndRequest) sonra düyməni yenidən bərpa et
+        if (typeof window.Sys !== 'undefined' && window.Sys.WebForms && window.Sys.WebForms.PageRequestManager) {
+            const prm = window.Sys.WebForms.PageRequestManager.getInstance();
+            prm.add_endRequest(function () {
+                setTimeout(addPrintButton, 200);
+            });
+        }
+
+        // MutationObserver mexanizmini daha yüngül və hədəfli hala gətiririk
+        const observer = new MutationObserver((mutations) => {
+            for (let mutation of mutations) {
+                if (mutation.addedNodes.length) {
+                    if (document.getElementById('ctl00_CphMaster_rbtnClose') && !document.getElementById('custom-print-label-btn')) {
+                        addPrintButton();
+                        break;
+                    }
+                }
             }
         });
-        const observerTarget = document.body;
-        if(observerTarget) {
-            observer.observe(observerTarget, { childList: true, subtree: true });
-        }
-    });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // Səhifə tam hazır olduqda işə sal
+    if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();
