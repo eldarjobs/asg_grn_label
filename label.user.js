@@ -309,7 +309,7 @@
                 body { font-family: Arial, sans-serif; background: white; color: #000; -webkit-print-color-adjust: exact; }
                 .label-box {
                     width: ${labelWidth}; height: ${labelHeight};
-                    padding: 3mm 4mm 1mm 4mm; /* Yuxarı padding bir az azaldıldı */
+                    padding: 4mm 4mm 1mm 4mm; /* Yuxarı padding bir az azaldıldı */
                     box-sizing: border-box; page-break-after: always;
                     position: relative; display: flex; flex-direction: column;
                     overflow: hidden;
