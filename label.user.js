@@ -366,8 +366,7 @@
     }
 
 function sendStatsToSheet(grn, count) {
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwsO2tI6PYCaGABOl8JnF7p5UeMhh36oKQ_EbQ4jPWj1WYruDPjTxPkCYxdXbsr0T8Arg/exec';
-    
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwsO2tI6PYCaGABOl8JnF7p5UeMhh36oKQ_EbQ4jPWj1WYruDPjTxPkCYxdXbsr0T8Arg/exec";    
     // Kompüterin adını və ya brauzer məlumatını götürür
     const computerName = window.location.hostname || "Naməlum PC"; 
     
