@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GRN Print Label
 // @namespace    http://tampermonkey.net/
-// @version      2.7
+// @version      2.8
 // @author       Eldar Eyvazlı
 // @match        https://skycatering.aerochef.online/ASGProd/GeneralStores/Forms/FKMS_GNST_GRN_Details.aspx*
 // @updateURL    https://github.com/eldarjobs/asg_grn_label/raw/refs/heads/main/label.user.js
@@ -85,7 +85,6 @@
             if (brand && !brand.toLowerCase().includes('select') && !brand.startsWith('---')) {
                 name = `${name} ${brand}`;
             }
-            // ----------------------------------------------------
 
             if (!name) return;
 
@@ -246,6 +245,7 @@
 
     function executePrint(items, grnNo, grnDate) {
         let labelsHtml = '';
+        let totalLabelsCount = 0; // Ümumi çap sayını hesablamaq üçün dəyişən
         const now = new Date();
         const printTimestamp = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
@@ -267,6 +267,9 @@
             let copies = parseInt(document.getElementById(`copy_${i.id}`)?.value) || 1;
 
             if (labelQty > totalQty) labelQty = totalQty;
+
+            // Seçilmiş sətirdəki etiket sayını ümumi saya əlavə edirik
+            totalLabelsCount += copies;
 
             let remaining = totalQty;
             for (let c = 0; c < copies; c++) {
@@ -299,6 +302,11 @@
             return;
         }
 
+        // Çap pəncərəsi açılmamışdan öncə statistikanı Google Sheets-ə göndəririk
+        if (totalLabelsCount > 0) {
+            sendStatsToSheet(grnNo, totalLabelsCount);
+        }
+
         const win = window.open('', '_blank', 'width=450,height=400');
         win.document.write(`
             <!DOCTYPE html>
@@ -309,7 +317,7 @@
                 body { font-family: Arial, sans-serif; background: white; color: #000; -webkit-print-color-adjust: exact; }
                 .label-box {
                     width: ${labelWidth}; height: ${labelHeight};
-                    padding: 5mm 4mm 1mm 4mm; /* Yuxarı padding bir az azaldıldı */
+                    padding: 5mm 4mm 1mm 4mm;
                     box-sizing: border-box; page-break-after: always;
                     position: relative; display: flex; flex-direction: column;
                     overflow: hidden;
@@ -320,7 +328,7 @@
                     letter-spacing: 0.5px; font-weight: 900;
                 }
                 .info-row {
-                    font-size: 11px; margin-bottom: 1px; /* Sətir arası məsafə sıxlaşdırıldı */
+                    font-size: 11px; margin-bottom: 1px;
                     display: flex; align-items: flex-start; line-height: 1.1;
                 }
                 .label {
@@ -342,7 +350,7 @@
                 @media print {
                     @page { 
                         size: ${labelWidth} ${labelHeight}; 
-                        margin: 0 !important; /* Brauzer kənarlarını tam sıfırlayır */
+                        margin: 0 !important;
                     }
                     html, body { width: ${labelWidth}; height: ${labelHeight}; margin: 0; padding: 0; }
                     .label-box { margin: 0; border: none; width: ${labelWidth}; height: ${labelHeight}; page-break-after: always; }
@@ -356,6 +364,24 @@
         win.focus();
         setTimeout(() => { win.print(); win.close(); }, 300);
     }
+
+function sendStatsToSheet(grn, count) {
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwsO2tI6PYCaGABOl8JnF7p5UeMhh36oKQ_EbQ4jPWj1WYruDPjTxPkCYxdXbsr0T8Arg/exec';
+    
+    // Kompüterin adını və ya brauzer məlumatını götürür
+    const computerName = window.location.hostname || "Naməlum PC"; 
+    
+    fetch(WEB_APP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            user: computerName, // Burada artıq PC adı avtomatik yazılacaq
+            grn: grn,
+            count: count
+        })
+    }).catch(err => console.error("Audit qeydi göndərilə bilmədi:", err));
+}
 
     function init() {
         addPrintButton();
