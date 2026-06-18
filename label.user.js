@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GRN Print Label
 // @namespace    http://tampermonkey.net/
-// @version      2.8
+// @version      3.0
 // @author       Eldar Eyvazlı
 // @match        https://skycatering.aerochef.online/ASGProd/GeneralStores/Forms/FKMS_GNST_GRN_Details.aspx*
 // @updateURL    https://github.com/eldarjobs/asg_grn_label/raw/refs/heads/main/label.user.js
@@ -53,69 +53,62 @@
         const grnDate = grnDateElem ? grnDateElem.value : 'N/A';
 
         const grid = document.getElementById('ctl00_CphMaster_dgvItemDetails');
-        if (!grid) {
-            alert("Item data table not found!");
-            return;
-        }
-
-        const rows = grid.querySelectorAll('tr.acf-griddetail-normalrow, tr.acf-griddetail-alternaterow');
         const itemsData = [];
 
-        rows.forEach((row, idx) => {
-            const nameSpan = row.querySelector('[id$="lblItem_Description"]');
-            if (!nameSpan) return; 
+        if (grid) {
+            const rows = grid.querySelectorAll('tr.acf-griddetail-normalrow, tr.acf-griddetail-alternaterow');
 
-            const cells = row.querySelectorAll('td');
-            if (cells.length < 4) return;
+            rows.forEach((row, idx) => {
+                const nameSpan = row.querySelector('[id$="lblItem_Description"]');
+                if (!nameSpan) return;
 
-            const code = cells[11] ? cells[11].innerText.trim() : '';
-            let name = nameSpan.innerText.trim();
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 4) return;
 
-            let brand = '';
-            const brandSelect = row.querySelector('select');
-            if (brandSelect) {
-                brand = brandSelect.options[brandSelect.selectedIndex]?.text.trim() || '';
-            } else {
-                const brandInput = row.querySelector('input[id$="rcbgridItemBrand_Input"], .rcbInput');
-                if (brandInput) {
-                    brand = brandInput.value.trim();
+                const code = cells[11] ? cells[11].innerText.trim() : '';
+                let name = nameSpan.innerText.trim();
+
+                let brand = '';
+                const brandSelect = row.querySelector('select');
+                if (brandSelect) {
+                    brand = brandSelect.options[brandSelect.selectedIndex]?.text.trim() || '';
+                } else {
+                    const brandInput = row.querySelector('input[id$="rcbgridItemBrand_Input"], .rcbInput');
+                    if (brandInput) {
+                        brand = brandInput.value.trim();
+                    }
                 }
-            }
-            
-            if (brand && !brand.toLowerCase().includes('select') && !brand.startsWith('---')) {
-                name = `${name} ${brand}`;
-            }
 
-            if (!name) return;
+                if (brand && !brand.toLowerCase().includes('select') && !brand.startsWith('---')) {
+                    name = `${name} ${brand}`;
+                }
 
-            const unitSpan = row.querySelector('[id$="lblUnit_Description"]');
-            const unit = unitSpan ? unitSpan.innerText.trim() : (cells[4] ? cells[4].innerText.trim() : '');
+                if (!name) return;
 
-            let qty = '';
-            const qtyInput = row.querySelector('[id$="txtLandedQty"]');
-            if (qtyInput) qty = qtyInput.value;
-            else if (cells[6]) qty = cells[6].innerText.trim();
+                const unitSpan = row.querySelector('[id$="lblUnit_Description"]');
+                const unit = unitSpan ? unitSpan.innerText.trim() : (cells[4] ? cells[4].innerText.trim() : '');
 
-            const batchInput = row.querySelector('[id$="txtBatchNo"]');
-            const batch = batchInput ? batchInput.value.trim() : '';
+                let qty = '';
+                const qtyInput = row.querySelector('[id$="txtLandedQty"]');
+                if (qtyInput) qty = qtyInput.value;
+                else if (cells[6]) qty = cells[6].innerText.trim();
 
-            const expiryInput = row.querySelector('[id$="rdtExpiryDate_dateInput"]');
-            const expiry = expiryInput ? expiryInput.value.trim() : '';
+                const batchInput = row.querySelector('[id$="txtBatchNo"]');
+                const batch = batchInput ? batchInput.value.trim() : '';
 
-            itemsData.push({
-                id: idx,
-                code: code,
-                name: name,
-                unit: unit,
-                qty: qty,
-                batch: batch,
-                expiry: expiry
+                const expiryInput = row.querySelector('[id$="rdtExpiryDate_dateInput"]');
+                const expiry = expiryInput ? expiryInput.value.trim() : '';
+
+                itemsData.push({
+                    id: idx,
+                    code: code,
+                    name: name,
+                    unit: unit,
+                    qty: qty,
+                    batch: batch,
+                    expiry: expiry
+                });
             });
-        });
-
-        if (itemsData.length === 0) {
-            alert("No items found!");
-            return;
         }
 
         createModalUI(itemsData, grnNo, grnDate);
@@ -176,7 +169,7 @@
                                             <td align="left"><input type="text" id="code_${i.id}" class="acf-form-textbox" value="${escapeHtml(i.code)}" style="width: 100%;"></td>
                                             <td align="right"><input type="text" id="totalqty_${i.id}" class="acf-form-ntextbox" value="${escapeHtml(i.qty)}" disabled style="width:100%; text-align:right; background:#e9ecef;"></td>
                                             <td align="right"><input type="number" id="labelqty_${i.id}" class="acf-form-ntextbox tm-highlight-input" value="${escapeHtml(i.qty)}" step="any" style="width:100%; text-align:right;"></td>
-                                            <td align="center">${escapeHtml(i.unit)}<input type="hidden" id="unit_${i.id}" value="${escapeHtml(i.unit)}"></td>
+                                            <td align="center"><input type="text" id="unit_${i.id}" class="acf-form-textbox" value="${escapeHtml(i.unit)}" style="width:50px; text-align:center; padding:2px;"></td>
                                             <td align="right"><input type="text" id="batch_${i.id}" class="acf-form-textbox" value="${escapeHtml(i.batch)}" style="width:100%;"></td>
                                             <td align="right"><input type="text" id="exp_${i.id}" class="acf-form-textbox" value="${escapeHtml(i.expiry)}" style="width:100%;"></td>
                                             <td align="center"><input type="number" id="copy_${i.id}" class="acf-form-ntextbox" value="1" min="1" max="100" style="width:80px; text-align:center;"></td>
@@ -187,6 +180,15 @@
                             </table>
                         </div>
                     </div>
+
+                    <div class="row" style="width: 100%; margin-top: 5px; margin-bottom: 15px;">
+                        <div class="col-12 text-left" style="padding-left: 20px;">
+                            <a id="tm-add-custom-item-btn" class="btn acf-btn-bluedark" style="color: white; cursor: pointer; background:#28a745; padding:4px 12px; border-radius:4px; font-size: 13px;">
+                                <i class="material-icons acf-material-btnicon" style="font-size:16px;">add</i> Add Manual Item
+                            </a>
+                        </div>
+                    </div>
+
                     <div class="row" style="width: 100%; margin-top: 10px;">
                         <div class="col-12 text-center">
                             <select id="tm-label-size" style="padding: 6px; border-radius: 4px; margin-right: 15px; border: 1px solid #ccc; outline: none; cursor: pointer;">
@@ -215,10 +217,10 @@
             });
         }
 
-        items.forEach(i => {
-            const labelQty = document.getElementById(`labelqty_${i.id}`);
-            const totalQty = document.getElementById(`totalqty_${i.id}`);
-            const copies = document.getElementById(`copy_${i.id}`);
+        const bindQtyListeners = (id) => {
+            const labelQty = document.getElementById(`labelqty_${id}`);
+            const totalQty = document.getElementById(`totalqty_${id}`);
+            const copies = document.getElementById(`copy_${id}`);
             if (labelQty && totalQty && copies) {
                 labelQty.addEventListener('input', () => {
                     const total = parseFloat(totalQty.value) || 0;
@@ -226,7 +228,36 @@
                     copies.value = (label > 0 && label < total) ? Math.ceil(total / label) : 1;
                 });
             }
-        });
+        };
+
+        items.forEach(i => bindQtyListeners(i.id));
+
+        let customIdCounter = 1000;
+        document.getElementById('tm-add-custom-item-btn').onclick = () => {
+            customIdCounter++;
+            const tbody = document.querySelector('#tm-native-modal-wrapper tbody');
+            const newRow = document.createElement('tr');
+            newRow.className = customIdCounter % 2 === 0 ? 'acf-griddetail-normalrow' : 'acf-griddetail-alternaterow';
+            newRow.align = 'center';
+            newRow.innerHTML = `
+                <td><input type="checkbox" id="chk_${customIdCounter}" class="tm-item-checkbox" checked style="transform: scale(1.3);"></td>
+                <td align="left"><input type="text" id="name_${customIdCounter}" class="acf-form-textbox" value="" placeholder="Type custom description..." style="width: 100%;"></td>
+                <td align="left"><input type="text" id="code_${customIdCounter}" class="acf-form-textbox" value="MANUAL" style="width: 100%;"></td>
+                <td align="right"><input type="number" id="totalqty_${customIdCounter}" class="acf-form-ntextbox" value="1" step="any" style="width:100%; text-align:right;"></td>
+                <td align="right"><input type="number" id="labelqty_${customIdCounter}" class="acf-form-ntextbox tm-highlight-input" value="1" step="any" style="width:100%; text-align:right;"></td>
+                <td align="center"><input type="text" id="unit_${customIdCounter}" class="acf-form-textbox" value="EA" style="width:50px; text-align:center; padding: 2px;"></td>
+                <td align="right"><input type="text" id="batch_${customIdCounter}" class="acf-form-textbox" value="" style="width:100%;"></td>
+                <td align="right"><input type="text" id="exp_${customIdCounter}" class="acf-form-textbox" value="" style="width:100%;"></td>
+                <td align="center"><input type="number" id="copy_${customIdCounter}" class="acf-form-ntextbox" value="1" min="1" max="100" style="width:80px; text-align:center;"></td>
+            `;
+            tbody.appendChild(newRow);
+
+            items.push({ id: customIdCounter });
+            bindQtyListeners(customIdCounter);
+
+            const newChk = document.getElementById(`chk_${customIdCounter}`);
+            if(selectAll && newChk) newChk.checked = selectAll.checked;
+        };
 
         const closeModal = () => {
             const ov = document.getElementById('tm-print-overlay');
@@ -245,7 +276,7 @@
 
     function executePrint(items, grnNo, grnDate) {
         let labelsHtml = '';
-        let totalLabelsCount = 0; // Ümumi çap sayını hesablamaq üçün dəyişən
+        let totalLabelsCount = 0;
         const now = new Date();
         const printTimestamp = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
@@ -256,6 +287,8 @@
         items.forEach(i => {
             const isChecked = document.getElementById(`chk_${i.id}`)?.checked;
             if (!isChecked) return;
+
+            const isManualItem = i.id >= 1000;
 
             const name = escapeHtml(document.getElementById(`name_${i.id}`)?.value || '');
             const code = escapeHtml(document.getElementById(`code_${i.id}`)?.value || '');
@@ -268,8 +301,19 @@
 
             if (labelQty > totalQty) labelQty = totalQty;
 
-            // Seçilmiş sətirdəki etiket sayını ümumi saya əlavə edirik
             totalLabelsCount += copies;
+
+            // GRN row logic: Hide if manual item or if GRN is N/A
+            let grnRowHtml = '';
+            if (!isManualItem && grnNo && grnNo !== 'N/A') {
+                grnRowHtml = `<div class="info-row"><span class="label">GRN No:</span> <span class="val">${escapeHtml(grnNo)}</span></div>`;
+            }
+
+            // Date logic: Use current date if manual item or if GRN Date is N/A
+            let displayDate = grnDate;
+            if (isManualItem || !displayDate || displayDate === 'N/A') {
+                displayDate = now.toLocaleDateString('en-GB');
+            }
 
             let remaining = totalQty;
             for (let c = 0; c < copies; c++) {
@@ -285,8 +329,8 @@
                 labelsHtml += `
                     <div class="label-box">
                         <h2>SKY CATERING</h2>
-                        <div class="info-row"><span class="label">GRN No:</span> <span class="val">${escapeHtml(grnNo)}</span></div>
-                        <div class="info-row"><span class="label">Date:</span> <span class="val">${escapeHtml(grnDate)}</span></div>
+                        ${grnRowHtml}
+                        <div class="info-row"><span class="label">Date:</span> <span class="val">${escapeHtml(displayDate)}</span></div>
                         <div class="info-row"><span class="label">Item:</span> <span class="val item-val">${code} - ${name}</span></div>
                         <div class="info-row"><span class="label">Qty:</span> <span class="val qty-val">${displayQty}</span></div>
                         <div class="info-row"><span class="label">Batch:</span> <span class="val">${batch}</span></div>
@@ -302,7 +346,6 @@
             return;
         }
 
-        // Çap pəncərəsi açılmamışdan öncə statistikanı Google Sheets-ə göndəririk
         if (totalLabelsCount > 0) {
             sendStatsToSheet(grnNo, totalLabelsCount);
         }
@@ -348,8 +391,8 @@
                     font-size: 9px; color: #333; font-weight: normal;
                 }
                 @media print {
-                    @page { 
-                        size: ${labelWidth} ${labelHeight}; 
+                    @page {
+                        size: ${labelWidth} ${labelHeight};
                         margin: 0 !important;
                     }
                     html, body { width: ${labelWidth}; height: ${labelHeight}; margin: 0; padding: 0; }
@@ -365,22 +408,21 @@
         setTimeout(() => { win.print(); win.close(); }, 300);
     }
 
-function sendStatsToSheet(grn, count) {
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwsO2tI6PYCaGABOl8JnF7p5UeMhh36oKQ_EbQ4jPWj1WYruDPjTxPkCYxdXbsr0T8Arg/exec";    
-    // Kompüterin adını və ya brauzer məlumatını götürür
-    const computerName = window.location.hostname || "Naməlum PC"; 
-    
-    fetch(WEB_APP_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            user: computerName, // Burada artıq PC adı avtomatik yazılacaq
-            grn: grn,
-            count: count
-        })
-    }).catch(err => console.error("Audit qeydi göndərilə bilmədi:", err));
-}
+    function sendStatsToSheet(grn, count) {
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwsO2tI6PYCaGABOl8JnF7p5UeMhh36oKQ_EbQ4jPWj1WYruDPjTxPkCYxdXbsr0T8Arg/exec";
+        const computerName = window.location.hostname || "Naməlum PC";
+
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user: computerName,
+                grn: grn,
+                count: count
+            })
+        }).catch(err => console.error("Audit qeydi göndərilə bilmədi:", err));
+    }
 
     function init() {
         addPrintButton();
